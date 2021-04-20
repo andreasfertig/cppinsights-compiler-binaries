@@ -4,7 +4,7 @@ on: [push]
 #    branches: [master]
 env:
   CMAKE_VERSION: 3.16.2
-  LLVM_VERSION: 10.0.0
+  LLVM_VERSION: 12.0.0
 
 jobs:
   build:
@@ -17,13 +17,13 @@ jobs:
         - {
             name: "Windows",
             os: windows-latest,
-            llvm_version: "10.0.0",
+            llvm_version: "12.0.0",
             llvm_config: "current/bin/llvm-config.exe",
           }
-      
+
     steps:
     - uses: actions/checkout@v2
-      with: 
+      with:
         repository: 'llvm/llvm-project'
         ref: 'llvmorg-${{ matrix.config.llvm_version }}'
         path: 'llvm-project'
@@ -50,7 +50,7 @@ jobs:
         # preserve it for the next steps
         message("::set-output name=cmake_base_dir::${cmake_base_dir}")
 
-        
+
     - name: Download CMake
       shell: cmake -P {0}
       run: |
@@ -60,7 +60,7 @@ jobs:
         #        execute_process(COMMAND ${CMAKE_COMMAND} -E remove ./cmake.zip)
 
         set(cmake_dir "${{ steps.cmake_setup.outputs.cmake_dir }}")
-        
+
     - name: Install Clang 10
       id: install_clang_10
       shell: cmake -P {0}
@@ -81,12 +81,12 @@ jobs:
       shell: bash
       run: |
           ls -l
-      
+
     - name: Configure
       id: cmake_configure
       shell: cmake -P {0}
       run: |
-        # ${{ steps.cmake_setup.outputs.cmake_dir }}/cmake -S llvm-project/compiler-rt -B build -D "LLVM_CONFIG_PATH=$ENV{GITHUB_WORKSPACE}/current/bin/llvm-config.exe"  
+        # ${{ steps.cmake_setup.outputs.cmake_dir }}/cmake -S llvm-project/compiler-rt -B build -D "LLVM_CONFIG_PATH=$ENV{GITHUB_WORKSPACE}/current/bin/llvm-config.exe"
         execute_process(
           COMMAND ${{ steps.cmake_setup.outputs.cmake_dir }}/cmake
             -S llvm-project/compiler-rt
@@ -96,7 +96,7 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit from cmake configure status")
-        endif() 
+        endif()
 
     - name: Build
       shell: cmake -P {0}
@@ -108,7 +108,7 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
-        endif() 
+        endif()
 
     - name: Create archive
       shell: cmake -P {0}
