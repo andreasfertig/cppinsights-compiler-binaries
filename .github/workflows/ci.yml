@@ -4,7 +4,6 @@ on: [push]
 #    branches: [master]
 env:
   CMAKE_VERSION: 3.16.2
-  LLVM_VERSION: 13.0.0
 
 jobs:
   fetchbin:
@@ -17,7 +16,8 @@ jobs:
         - {
             name: "Windows",
             os: windows-latest,
-            llvm_version: "12.0.0",
+            llvm_version: "13.0.0",
+            llvm_major_version: "13",
             llvm_config: "current/bin/llvm-config.exe",
           }
 
@@ -69,12 +69,20 @@ jobs:
         file(MAKE_DIRECTORY "$ENV{GITHUB_WORKSPACE}/build/archive")
         file(DOWNLOAD "https://ziglang.org/deps/${archive_name}" "$ENV{GITHUB_WORKSPACE}/build/archive/${archive_name}")
 
-    - uses: actions/upload-artifact@v2
+        #    - uses: actions/upload-artifact@v2
+        #      with:
+        #        name: llvm+clang+lld-${{ matrix.config.llvm_version }}-x86_64-windows-msvc-release-mt.tar.xz
+        #        if-no-files-found: error
+        #        path: |
+        #            ${{ github.workspace }}/build/archive/llvm+clang+lld-${{ matrix.config.llvm_version }}-x86_64-windows-msvc-release-mt.tar.xz
+
+    - name: Upload binary to GH
+      uses: svenstaro/upload-release-action@v2
       with:
-        name: llvm+clang+lld-${{ matrix.config.llvm_version }}-x86_64-windows-msvc-release-mt.tar.xz
-        if-no-files-found: error
-        path: |
-            ${{ github.workspace }}/build/archive/llvm+clang+lld-${{ matrix.config.llvm_version }}-x86_64-windows-msvc-release-mt.tar.xz
+        file: ${{ github.workspace }}/build/archive/llvm+clang+lld-${{ matrix.config.llvm_version }}-x86_64-windows-msvc-release-mt.tar.xz
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: LLVM-${{ matrix.config.llvm_major_version }}
+        overwrite: false
 #------------------------------------------------------------------------------------------------
 
   build:
@@ -198,3 +206,11 @@ jobs:
         path: |
             ${{ github.workspace }}/build/archive/*
 
+    - name: Upload binary to GH
+      uses: svenstaro/upload-release-action@v2
+      with:
+        file: ${{ github.workspace }}/build/archive/*
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: LLVM-${{ matrix.config.llvm_major_version }}
+        overwrite: false
+        file_glob: true
