@@ -16,8 +16,8 @@ jobs:
         - {
             name: "Windows",
             os: windows-latest,
-            llvm_version: "13.0.0",
-            llvm_major_version: "13",
+            llvm_version: "14.0.0",
+            llvm_major_version: "14",
             llvm_config: "current/bin/llvm-config.exe",
           }
 
@@ -92,7 +92,7 @@ jobs:
         - {
             name: "Windows",
             os: windows-latest,
-            llvm_version: "13.0.0",
+            llvm_version: "14.0.0",
             llvm_config: "current/bin/llvm-config.exe",
           }
 
