@@ -19,8 +19,8 @@ jobs:
             os: windows-latest,
             build_type: Release,
             cxx: "cl",
+            cc: "cl",
             llvm_version: "14.0.0",
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
           }
 
     steps:
@@ -94,6 +94,13 @@ jobs:
 
     - name: Setup MSVC Dev
       uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
 
     - name: Show
       shell: bash
@@ -105,6 +112,7 @@ jobs:
       shell: cmake -P {0}
       run: |
         set(ENV{CXX} ${{ matrix.config.cxx }})
+        set(ENV{CC} ${{ matrix.config.cc }})
         if ("${{ runner.os }}" STREQUAL "macOS")
           set(ENV{SDKROOT} "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk")
         endif()
@@ -122,6 +130,7 @@ jobs:
             -B build
             -G "Ninja"
             -D CMAKE_BUILD_TYPE=Release
+            -D VCPKG_TARGET_TRIPLET=x64-windows-static-release
             -D LLVM_ENABLE_ASSERTIONS=OFF
             -D CLANG_ENABLE_STATIC_ANALYZER=OFF
             -D CLANG_ENABLE_ARCMT=OFF
