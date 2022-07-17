@@ -32,11 +32,15 @@ jobs:
           }
 
     steps:
-    - name: Setup Windows
-      if: startsWith(matrix.os, 'windows')
-      uses: llvm/actions/setup-windows@main
+    - name: Setup MSVC Dev
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x86_amd64
+        arch: x64
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
 
     - name: Install Ninja
       uses: llvm/actions/install-ninja@main
