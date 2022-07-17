@@ -48,26 +48,35 @@ jobs:
         path: 'llvm-project'
 
     - name: Configure
-      uses: llvm/actions/build-test-llvm-project@main
-      with:
-        cmake_args: '-S $ENV{GITHUB_WORKSPACE}/llvm-project/llvm -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$ENV{GITHUB_WORKSPACE}/clang-14"'
+      run: |
+        mkdir clang-14
+        cmake -S $env:GITHUB_WORKSPACE/llvm-project/llvm -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE/clang-14
+
+        #        -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_TARGETS_TO_BUILD="" -DLLVM_BUILD_LLVM_DYLIB=ON -DCMAKE_C_FLAGS_DEBUG="-g1 -Og" -DCMAKE_CXX_FLAGS_DEBUG="-g1 -Og" -DCMAKE_INSTALL_PREFIX=`pwd`/install llvm
+
+        #    - name: Configure
+        #      uses: llvm/actions/build-test-llvm-project@main
+        #      with:
+        #        cmake_args: '-B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/clang-14"'
           #        build_target:  '${{ inputs.build_target }}'
 
     - name: Build
+      continue-on-error: false
       run: |
         # Make sure all of LLVM libraries that llvm-config needs are built.
         ninja -C build
+        ninja -C build install
 
     - name: Show
       shell: bash
       run: |
           ls -l
 
-    - name: Install
-      #      shell: cmake -P {0}
-      continue-on-error: false
-      run: |
-        ninja -C build install
+          #    - name: Install
+          #      #      shell: cmake -P {0}
+          #      continue-on-error: false
+          #      run: |
+          #        ninja -C build install
         #        file(MAKE_DIRECTORY "$ENV{GITHUB_WORKSPACE}/clang-14")
         #        execute_process(
         #          cmake --build build --config Release --target install
