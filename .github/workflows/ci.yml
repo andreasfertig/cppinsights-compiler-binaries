@@ -36,7 +36,7 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       uses: llvm/actions/setup-windows@main
       with:
-        arch: amd64
+        arch: x86_amd64
 
     - name: Install Ninja
       uses: llvm/actions/install-ninja@main
