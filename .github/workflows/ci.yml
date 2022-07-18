@@ -6,14 +6,6 @@ env:
   CMAKE_VERSION: 3.16.2
   NINJA_VERSION: 1.10.0
 
-    #on:
-    #  [push]
-    #  workflow_dispatch:
-    #    inputs:
-    #      build_target:
-    #        required: true
-    #        type: string
-
 jobs:
   build:
     name: ${{ matrix.config.name }}
@@ -52,17 +44,11 @@ jobs:
         path: 'llvm-project'
 
     - name: Configure
+      env:
+        INSTALLDIR: ${{ github.workspace }}/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc
       run: |
-        mkdir clang-14
-        cmake -S $env:GITHUB_WORKSPACE/llvm-project/llvm -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/clang-14"
-
-        #        -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_TARGETS_TO_BUILD="" -DLLVM_BUILD_LLVM_DYLIB=ON -DCMAKE_C_FLAGS_DEBUG="-g1 -Og" -DCMAKE_CXX_FLAGS_DEBUG="-g1 -Og" -DCMAKE_INSTALL_PREFIX=`pwd`/install llvm
-
-        #    - name: Configure
-        #      uses: llvm/actions/build-test-llvm-project@main
-        #      with:
-        #        cmake_args: '-B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/clang-14"'
-          #        build_target:  '${{ inputs.build_target }}'
+        mkdir clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc
+        cmake -S $env:GITHUB_WORKSPACE/llvm-project/llvm -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$env:INSTALLDIR" -DLLVM_USE_CRT_DEBUG=MTd -DLLVM_USE_CRT_RELEASE=MT
 
     - name: Build
       continue-on-error: false
@@ -76,25 +62,10 @@ jobs:
       run: |
           ls -l
 
-          #    - name: Install
-          #      #      shell: cmake -P {0}
-          #      continue-on-error: false
-          #      run: |
-          #        ninja -C build install
-        #        file(MAKE_DIRECTORY "$ENV{GITHUB_WORKSPACE}/clang-14")
-        #        execute_process(
-        #          cmake --build build --config Release --target install
-        #          RESULT_VARIABLE result
-        #        )
-        #        if (NOT result EQUAL 0)
-        #          message(FATAL_ERROR "Bad exit status")
-        #        endif()
-
-    - name: Show
+    - name: Free disk space
       shell: bash
       run: |
           rm -rf build # we need disk space
-          ls -l clang-14
 
     - name: Create archive
       id: install_clang_10
@@ -104,7 +75,7 @@ jobs:
         set(path_separator ";")
 
         file(MAKE_DIRECTORY "$ENV{GITHUB_WORKSPACE}/archive")
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar cvz "$ENV{GITHUB_WORKSPACE}/archive/llvm+clang-${{ matrix.config.llvm_version }}-win64-msvc-release.tar.xz" -- "$ENV{GITHUB_WORKSPACE}/clang-14/")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar cvz "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc.tar.xz" -- "$ENV{GITHUB_WORKSPACE}/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc/")
 
         # Fetch LLVM/clang from LLVM for macOS
         file(DOWNLOAD "https://github.com/llvm/llvm-project/releases/download/llvmorg-${llvm_version}/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz" "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz")
