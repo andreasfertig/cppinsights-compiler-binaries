@@ -20,7 +20,7 @@ jobs:
             build_type: Release,
             cxx: "cl",
             cc: "cl",
-            llvm_version: "14.0.0",
+            llvm_version: "15.0.0",
           }
 
     steps:
@@ -68,7 +68,7 @@ jobs:
           rm -rf build # we need disk space
 
     - name: Create archive
-      id: install_clang_10
+      id: install_clang
       shell: cmake -P {0}
       run: |
         set(llvm_version ${{ matrix.config.llvm_version }})
