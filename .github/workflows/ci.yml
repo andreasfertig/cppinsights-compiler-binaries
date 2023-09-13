@@ -37,7 +37,7 @@ jobs:
     - name: Install Ninja
       uses: llvm/actions/install-ninja@main
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: 'llvm/llvm-project'
         ref: 'llvmorg-${{ matrix.config.llvm_version }}'
@@ -78,7 +78,7 @@ jobs:
         execute_process(COMMAND ${CMAKE_COMMAND} -E tar cvz "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc.tar.xz" -- "$ENV{GITHUB_WORKSPACE}/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc/")
 
         # Fetch LLVM/clang from LLVM for macOS
-        file(DOWNLOAD "https://github.com/llvm/llvm-project/releases/download/llvmorg-${llvm_version}/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz" "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz")
+        #        file(DOWNLOAD "https://github.com/llvm/llvm-project/releases/download/llvmorg-${llvm_version}/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz" "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz")
 
     - name: Upload binary to GH
       uses: svenstaro/upload-release-action@v2
