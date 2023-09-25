@@ -1,7 +1,10 @@
 name: Clang Windows build
 
-on: [push]
-#    branches: [master]
+on:
+  push:
+    tags:
+      - '*'
+
 env:
   CMAKE_VERSION: 3.16.2
   NINJA_VERSION: 1.10.0
@@ -19,11 +22,15 @@ jobs:
             os: windows-2022,
             build_type: Release,
             cxx: "cl",
-            cc: "cl",
-            llvm_version: "15.0.0",
+            cc: "cl"
           }
 
     steps:
+    - name: Get tag name
+      id: get_tag_name
+      shell: bash
+      run: |
+          echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
     - name: Setup MSVC Dev
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -40,14 +47,14 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: 'llvm/llvm-project'
-        ref: 'llvmorg-${{ matrix.config.llvm_version }}'
+        ref: 'llvmorg-${{ steps.get_tag_name.outputs.VERSION }}'
         path: 'llvm-project'
 
     - name: Configure
       env:
-        INSTALLDIR: ${{ github.workspace }}/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc
+        INSTALLDIR: ${{ github.workspace }}/clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-win64-msvc
       run: |
-        mkdir clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc
+        mkdir clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-win64-msvc
         cmake -S $env:GITHUB_WORKSPACE/llvm-project/llvm -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCMAKE_INSTALL_UCRT_LIBRARIES=ON -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DCLANG_INCLUDE_TESTS=OFF -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" -DCMAKE_INSTALL_PREFIX="$env:INSTALLDIR" -DLLVM_USE_CRT_DEBUG=MTd -DLLVM_USE_CRT_RELEASE=MT
 
     - name: Build
@@ -71,11 +78,11 @@ jobs:
       id: install_clang
       shell: cmake -P {0}
       run: |
-        set(llvm_version ${{ matrix.config.llvm_version }})
+        set(llvm_version ${{ steps.get_tag_name.outputs.VERSION }})
         set(path_separator ";")
 
         file(MAKE_DIRECTORY "$ENV{GITHUB_WORKSPACE}/archive")
-        execute_process(COMMAND ${CMAKE_COMMAND} -E tar cvz "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc.tar.xz" -- "$ENV{GITHUB_WORKSPACE}/clang+llvm-${{ matrix.config.llvm_version }}-win64-msvc/")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E tar cvz "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-win64-msvc.tar.xz" -- "$ENV{GITHUB_WORKSPACE}/clang+llvm-${{ steps.get_tag_name.outputs.VERSION }}-win64-msvc/")
 
         # Fetch LLVM/clang from LLVM for macOS
         #        file(DOWNLOAD "https://github.com/llvm/llvm-project/releases/download/llvmorg-${llvm_version}/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz" "$ENV{GITHUB_WORKSPACE}/archive/clang+llvm-${llvm_version}-x86_64-apple-darwin.tar.xz")
@@ -85,6 +92,6 @@ jobs:
       with:
         file: ${{ github.workspace }}/archive/*.xz
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ matrix.config.llvm_version }}
+        tag: ${{ steps.get_tag_name.outputs.VERSION }}
         overwrite: false
         file_glob: true
