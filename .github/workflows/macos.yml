@@ -8,8 +8,8 @@ on:
     #  repository_dispatch:
 
 env:
-  CMAKE_VERSION: 3.16.2
-  NINJA_VERSION: 1.10.0
+  CMAKE_VERSION: 3.29.0
+  NINJA_VERSION: 1.11.1
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
         # AppleClang
         - {
             name: "macOS Clang",
-            os: macos-13,
+            os: macos-14,
             build_type: Release,
           }
 
@@ -60,8 +60,8 @@ jobs:
           set(cmake_dir "cmake-${cmake_version}-Linux-x86_64/bin")
         elseif ("${{ runner.os }}" STREQUAL "macOS")
           set(ninja_suffix "mac.zip")
-          set(cmake_suffix "Darwin-x86_64.tar.gz")
-          set(cmake_dir "cmake-${cmake_version}-Darwin-x86_64/CMake.app/Contents/bin")
+          set(cmake_suffix "macos-universal.tar.gz")
+          set(cmake_dir "cmake-${cmake_version}-macos-universal/CMake.app/Contents/bin")
         endif()
 
         set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
