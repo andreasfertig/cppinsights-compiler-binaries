@@ -32,14 +32,14 @@ jobs:
       shell: bash
       run: |
           echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2
     - name: Fetch clang
       shell: bash
       working-directory: ${{ env.HOME }}
       run: |
-        git clone https://github.com/llvm/llvm-project.git
+        git clone --depth 1 --single-branch -b llvmorg-${{ steps.get_tag_name.outputs.VERSION }} https://github.com/llvm/llvm-project.git
 
     - name: Download Ninja and CMake
       id: cmake_and_ninja
